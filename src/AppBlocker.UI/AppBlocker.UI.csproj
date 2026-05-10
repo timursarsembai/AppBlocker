@@ -14,6 +14,7 @@
     <ProjectReference Include="..\AppBlocker.Service\AppBlocker.Service.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="app.ico" />
     <Resource Include="app.png" />
   </ItemGroup>
 </Project>
