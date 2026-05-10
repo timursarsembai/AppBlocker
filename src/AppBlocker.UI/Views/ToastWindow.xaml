@@ -1,0 +1,49 @@
+<Window x:Class="AppBlocker.UI.Views.ToastWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True"
+        Width="380" SizeToContent="Height"
+        WindowStartupLocation="Manual">
+
+    <Border Background="#1C1C22" BorderBrush="#3F3F46" BorderThickness="1" 
+            CornerRadius="12" Margin="10" Padding="20,16">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="4" Opacity="0.5"/>
+        </Border.Effect>
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок: процесс заблокирован -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="🛑" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock x:Name="TitleText" Text="Процесс заблокирован" 
+                           FontSize="15" FontWeight="Bold" Foreground="#F87171" 
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Имя процесса -->
+            <TextBlock Grid.Row="1" x:Name="ProcessNameText" 
+                       Text="steam.exe" FontSize="13" Foreground="#A1A1AA" 
+                       Margin="0,0,0,14"/>
+
+            <!-- Разделитель -->
+            <Border Grid.Row="2" Background="#3F3F46" Height="1" Margin="0,0,0,14"/>
+
+            <!-- Дофаминовая привычка -->
+            <StackPanel Grid.Row="3">
+                <TextBlock Text="💡 ВМЕСТО ЭТОГО ПОПРОБУЙ" FontSize="11" Foreground="#34D399" 
+                           FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBlock x:Name="HabitText" Text="Сделай 10 глубоких вдохов" 
+                           FontSize="15" FontWeight="SemiBold" Foreground="#E4E4E7" 
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

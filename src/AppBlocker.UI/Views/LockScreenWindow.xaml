@@ -1,0 +1,86 @@
+<Window x:Class="AppBlocker.UI.Views.LockScreenWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Блокировка" 
+        WindowStyle="None" 
+        WindowState="Maximized" 
+        Topmost="True" 
+        ShowInTaskbar="False"
+        AllowsTransparency="True"
+        Background="#E609090B" 
+        Foreground="White"
+        FontFamily="Segoe UI"
+        Closing="Window_Closing">
+
+    <!-- Используем полупрозрачный черный фон (#E609090B), чтобы окно перекрывало экран, 
+         но было слегка видно, что под ним (эффект матового стекла) -->
+
+    <Grid>
+        <!-- Панель для режима "Снижение барьера" (Ввод текста) -->
+        <StackPanel x:Name="LowerBarrierPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="800">
+            
+            <TextBlock Text="⚠️ Блокировка активна" FontSize="48" FontWeight="Bold" Foreground="#F87171" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            <TextBlock Text="Вы действительно хотите прервать сессию?" FontSize="24" Foreground="#D4D4D8" HorizontalAlignment="Center" Margin="0,0,0,40"/>
+
+            <TextBlock Text="Перепечатайте этот текст без ошибок (вставка отключена):" FontSize="16" Foreground="#A1A1AA" Margin="0,0,0,10"/>
+            
+            <Border Background="#18181B" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <TextBlock x:Name="ChallengeTextBlock" FontFamily="Consolas" FontSize="24" TextWrapping="Wrap" HorizontalAlignment="Center" Foreground="#E4E4E7"/>
+            </Border>
+
+            <TextBox x:Name="InputTextBox" FontFamily="Consolas" FontSize="24" Height="120" TextWrapping="Wrap" 
+                     Background="#18181B" Foreground="White" BorderBrush="#3F3F46" BorderThickness="1" Padding="10"
+                     TextChanged="InputTextBox_TextChanged" DataObject.Pasting="InputTextBox_Pasting" ContextMenu="{x:Null}">
+                <TextBox.InputBindings>
+                    <KeyBinding Command="ApplicationCommands.NotACommand" Key="V" Modifiers="Control"/>
+                    <KeyBinding Command="ApplicationCommands.NotACommand" Key="Insert" Modifiers="Shift"/>
+                </TextBox.InputBindings>
+            </TextBox>
+
+            <Button x:Name="UnlockButton" Content="РАЗБЛОКИРОВАТЬ" FontSize="20" FontWeight="Bold" Foreground="White" 
+                    Background="#E74C3C" BorderThickness="0" Height="60" Margin="0,30,0,0" Cursor="Hand"
+                    IsEnabled="False" Click="UnlockButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.3"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            
+            <Button Content="Вернуться к работе" FontSize="18" Foreground="#A1A1AA" Background="Transparent" 
+                    BorderThickness="0" Margin="0,20,0,0" Cursor="Hand" Click="KeepWorkingButton_Click"/>
+        </StackPanel>
+
+
+        <!-- Панель для строгого режима (Окно ясности / Гиперфокус) -->
+        <StackPanel x:Name="StrictBlockPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            
+            <TextBlock Text="🛑 ДОСТУП ЗАКРЫТ" FontSize="64" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+            
+            <TextBlock Text="Этот сайт или приложение заблокировано на время сессии." FontSize="24" Foreground="#D4D4D8" HorizontalAlignment="Center" Margin="0,0,0,60"/>
+
+            <Border Background="#27272A" CornerRadius="16" Padding="40" Margin="0,0,0,50">
+                <StackPanel>
+                    <TextBlock Text="Вместо этого сделайте небольшую паузу:" FontSize="18" Foreground="#A1A1AA" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    <TextBlock x:Name="DopamineHabitTextBlock" Text="Выпейте стакан воды" FontSize="36" FontWeight="SemiBold" Foreground="#34D399" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="600"/>
+                </StackPanel>
+            </Border>
+
+            <Button Content="ПОНЯТНО" FontSize="24" FontWeight="Bold" Foreground="Black" Background="#10B981" 
+                    BorderThickness="0" Height="70" Width="300" Cursor="Hand" Click="OkayButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="35">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+        </StackPanel>
+    </Grid>
+</Window>

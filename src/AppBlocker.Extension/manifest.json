@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "AppBlocker — Фокус и Продуктивность",
+  "version": "1.0.0",
+  "description": "Блокировка отвлекающих сайтов и внутренних страниц для повышения продуктивности",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3eVlq1WqmWgZgT8EKFUmQkEf5aBAVGrUaCbFIaxROoSDP2Qc6jeWvfWpB2lSXP/GYKiHh7Mfz7SEseurjnHveY6dawrI5MFU+idb2UeVUY78wA26jwJk7SwVCqt6Y0rGAdKjKxdXuM0agL28rWDRLCMm4rJn5NMW0ls0ssoDCiRuRIRb7xd4wP0Kzgllr4aJAkIJtGykJ0CvUTYVa2C+eLppPvX0krJKFQGYjXNOv3CRN970XymfrRURKhtYSdcOzJiRGB2vdWiw2ufSFguHzRXac5iESzUnd127B0xRGZGrjXd6ufH2cFxbpBa2tHB7Jr/HdWyxHn7WzUnDs8KnKwIDAQAB",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "tabs",
+    "storage",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["block.html", "block.css", "block.js", "icons/icon48.png", "icons/icon128.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

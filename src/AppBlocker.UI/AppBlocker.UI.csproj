@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppBlocker.Core\AppBlocker.Core.csproj" />
+    <ProjectReference Include="..\AppBlocker.Shared\AppBlocker.Shared.csproj" />
+    <ProjectReference Include="..\AppBlocker.Service\AppBlocker.Service.csproj" />
+  </ItemGroup>
+</Project>

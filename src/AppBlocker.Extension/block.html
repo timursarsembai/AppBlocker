@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заблокировано — AppBlocker</title>
+    <link rel="stylesheet" href="block.css">
+</head>
+<body>
+    <div class="container">
+        <div class="shield">🛡️</div>
+        <div class="title">Сайт заблокирован</div>
+        <div class="domain">Вы попытались открыть <strong id="blockedUrl">сайт</strong></div>
+
+        <div id="timerBlock" class="timer" style="display:none;">
+            <div class="timer-label">До конца сессии</div>
+            <div class="timer-value" id="timerValue">00:00:00</div>
+        </div>
+
+        <div class="dopamine-card">
+            <div class="dopamine-label">💡 Вместо этого попробуй</div>
+            <div class="dopamine-text" id="habitText">Сделай 10 глубоких вдохов</div>
+        </div>
+
+        <div class="footer">AppBlocker — Фокус и Продуктивность</div>
+    </div>
+
+    <script src="block.js"></script>
+</body>
+</html>
