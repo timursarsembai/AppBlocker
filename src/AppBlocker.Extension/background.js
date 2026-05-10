@@ -1,4 +1,4 @@
-﻿// AppBlocker Chrome Extension - Service Worker (Manifest V3)
+// AppBlocker Chrome Extension - Service Worker (Manifest V3)
 const NATIVE_HOST = "com.appblocker.bridge";
 const CONFIG_POLL_INTERVAL = 3000;
 
@@ -66,7 +66,6 @@ function handleConfig(msg) {
 
   chrome.storage.local.set({
     blockedPatterns: msg.blocked || [],
-    dopamineHabits: msg.habits || [],
     sessionEnd,
     sessionMode,
     isSessionActive

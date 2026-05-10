@@ -30,7 +30,6 @@ namespace AppBlocker.UI.ViewModels
 
         private readonly DashboardViewModel _dashboardVm;
         private readonly BlacklistsViewModel _blacklistsVm;
-        private readonly DopamineMenuViewModel _dopamineVm;
         private readonly SettingsViewModel _settingsVm;
 
         public object CurrentViewModel
@@ -41,19 +40,16 @@ namespace AppBlocker.UI.ViewModels
 
         public ICommand NavigateDashboardCommand { get; }
         public ICommand NavigateBlacklistsCommand { get; }
-        public ICommand NavigateDopamineCommand { get; }
         public ICommand NavigateSettingsCommand { get; }
 
         public MainViewModel()
         {
             _dashboardVm = new DashboardViewModel();
             _blacklistsVm = new BlacklistsViewModel();
-            _dopamineVm = new DopamineMenuViewModel();
             _settingsVm = new SettingsViewModel();
 
             NavigateDashboardCommand = new RelayCommand(_ => TryNavigate(_dashboardVm));
             NavigateBlacklistsCommand = new RelayCommand(_ => TryNavigate(_blacklistsVm));
-            NavigateDopamineCommand = new RelayCommand(_ => TryNavigate(_dopamineVm));
             NavigateSettingsCommand = new RelayCommand(_ => TryNavigate(_settingsVm));
 
             CurrentViewModel = _dashboardVm;
@@ -523,92 +519,6 @@ namespace AppBlocker.UI.ViewModels
         {
             _currentConfig.BlockedProcesses = _allProcesses.Where(p => p.IsBlocked).Select(p => p.FileName).ToList();
             _configManager.SaveConfig(_currentConfig);
-        }
-    }
-
-    // ========================================================================
-    //  3. ДОФАМИНОВОЕ МЕНЮ
-    // ========================================================================
-    public class DopamineHabit : ViewModelBase
-    {
-        private string _title;
-        private bool _isCompleted;
-
-        public string Title
-        {
-            get => _title;
-            set { _title = value; OnPropertyChanged(); }
-        }
-
-        public bool IsCompleted
-        {
-            get => _isCompleted;
-            set { _isCompleted = value; OnPropertyChanged(); }
-        }
-    }
-
-    public class DopamineMenuViewModel : ViewModelBase
-    {
-        private readonly ConfigManager _configManager;
-
-        public ObservableCollection<DopamineHabit> Habits { get; set; }
-
-        private string _newHabitText;
-        public string NewHabitText
-        {
-            get => _newHabitText;
-            set { _newHabitText = value; OnPropertyChanged(); }
-        }
-
-        public ICommand AddHabitCommand { get; }
-        public ICommand RemoveHabitCommand { get; }
-
-        public DopamineMenuViewModel()
-        {
-            _configManager = new ConfigManager();
-            var config = _configManager.LoadConfig();
-
-            if (config.DopamineHabits != null && config.DopamineHabits.Count > 0)
-            {
-                Habits = new ObservableCollection<DopamineHabit>(
-                    config.DopamineHabits.Select(title => new DopamineHabit { Title = title })
-                );
-            }
-            else
-            {
-                Habits = new ObservableCollection<DopamineHabit>
-                {
-                    new DopamineHabit { Title = "Выпить стакан воды" },
-                    new DopamineHabit { Title = "Сделать 10 приседаний" },
-                    new DopamineHabit { Title = "Посмотреть в окно вдаль" },
-                    new DopamineHabit { Title = "Сделать 10 глубоких вдохов" },
-                    new DopamineHabit { Title = "Пройтись по комнате 2 минуты" },
-                    new DopamineHabit { Title = "Размять шею и плечи" },
-                };
-                SaveHabits();
-            }
-
-            AddHabitCommand = new RelayCommand(_ =>
-            {
-                if (!string.IsNullOrWhiteSpace(NewHabitText))
-                {
-                    Habits.Add(new DopamineHabit { Title = NewHabitText.Trim() });
-                    NewHabitText = string.Empty;
-                    SaveHabits();
-                }
-            });
-
-            RemoveHabitCommand = new RelayCommand(habit =>
-            {
-                if (habit is DopamineHabit h) { Habits.Remove(h); SaveHabits(); }
-            });
-        }
-
-        private void SaveHabits()
-        {
-            var config = _configManager.LoadConfig();
-            config.DopamineHabits = Habits.Select(h => h.Title).ToList();
-            _configManager.SaveConfig(config);
         }
     }
 

@@ -146,14 +146,12 @@ namespace AppBlocker.UI.Services
                 _lastToastTime[processName] = DateTime.UtcNow;
             }
 
-            string habit = GetRandomHabit();
-
             // Показываем тост на UI-потоке
             Application.Current?.Dispatcher?.BeginInvoke(() =>
             {
                 try
                 {
-                    var toast = new ToastWindow(processName, habit);
+                    var toast = new ToastWindow(processName);
                     toast.Show();
                 }
                 catch (Exception ex)
@@ -161,21 +159,6 @@ namespace AppBlocker.UI.Services
                     Debug.WriteLine($"[Toast] Ошибка: {ex.Message}");
                 }
             });
-        }
-
-        private string GetRandomHabit()
-        {
-            try
-            {
-                var config = _configManager.LoadConfig();
-                var habits = config.DopamineHabits;
-                if (habits != null && habits.Count > 0)
-                {
-                    return habits[_random.Next(habits.Count)];
-                }
-            }
-            catch { }
-            return "Сделай 10 глубоких вдохов";
         }
 
         public void Dispose()

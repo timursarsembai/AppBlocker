@@ -15,16 +15,6 @@ namespace AppBlocker.UI.Views
         private BlockingMode _currentMode;
         private string _challengeString;
 
-        // Список привычек (в реальном проекте должен тянуться из конфигурации/базы данных)
-        private readonly string[] _randomHabits = new[]
-        {
-            "Выпейте стакан чистой воды",
-            "Сделайте 10 глубоких вдохов",
-            "Потянитесь и разомните шею",
-            "Посмотрите в окно вдаль на 20 секунд",
-            "Встаньте и пройдитесь по комнате"
-        };
-
         public LockScreenWindow(BlockingMode mode)
         {
             InitializeComponent();
@@ -51,10 +41,6 @@ namespace AppBlocker.UI.Views
                 // Режимы ClarityWindow или Hyperfocus
                 LowerBarrierPanel.Visibility = Visibility.Collapsed;
                 StrictBlockPanel.Visibility = Visibility.Visible;
-                
-                // Выбираем случайную привычку из Дофаминового меню
-                var random = new Random();
-                DopamineHabitTextBlock.Text = _randomHabits[random.Next(_randomHabits.Length)];
             }
         }
 

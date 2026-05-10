@@ -25,10 +25,6 @@
             <views:DashboardView />
         </DataTemplate>
         
-        <DataTemplate DataType="{x:Type vm:DopamineMenuViewModel}">
-            <views:DopamineMenuView />
-        </DataTemplate>
-        
         <DataTemplate DataType="{x:Type vm:BlacklistsViewModel}">
             <views:BlacklistsView />
         </DataTemplate>
@@ -81,7 +77,6 @@
                 <!-- Навигация с привязкой к командам из MainViewModel -->
                 <Button Content="Дашборд" Command="{Binding NavigateDashboardCommand}" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="Черные списки" Command="{Binding NavigateBlacklistsCommand}" Style="{StaticResource MenuButtonStyle}"/>
-                <Button Content="Дофаминовое меню" Command="{Binding NavigateDopamineCommand}" Style="{StaticResource MenuButtonStyle}"/>
                 <Button Content="Настройки" Command="{Binding NavigateSettingsCommand}" Style="{StaticResource MenuButtonStyle}"/>
             </StackPanel>
         </Border>

@@ -226,19 +226,6 @@ namespace AppBlocker.UI.Services
 
         // ===================== HTML страница =====================
 
-        private string GetRandomHabit()
-        {
-            try
-            {
-                var config = _configManager.LoadConfig();
-                var habits = config.DopamineHabits;
-                if (habits != null && habits.Count > 0)
-                    return habits[_random.Next(habits.Count)];
-            }
-            catch { }
-            return "Сделай 10 глубоких вдохов";
-        }
-
         private string GetTimeLeft()
         {
             try
@@ -257,7 +244,6 @@ namespace AppBlocker.UI.Services
 
         private string GenerateBlockPage(string host)
         {
-            string habit = GetRandomHabit();
             string timeLeft = GetTimeLeft();
 
             string timerBlock = timeLeft != null
@@ -333,26 +319,6 @@ namespace AppBlocker.UI.Services
             font-variant-numeric: tabular-nums;
             letter-spacing: 4px;
         }}
-        .dopamine-card {{
-            background: linear-gradient(135deg, #1C1C22 0%, #27272A 100%);
-            border: 1px solid #3F3F46;
-            border-radius: 16px;
-            padding: 30px;
-        }}
-        .dopamine-label {{
-            font-size: 12px;
-            color: #34D399;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }}
-        .dopamine-text {{
-            font-size: 22px;
-            font-weight: 600;
-            color: #E4E4E7;
-            line-height: 1.4;
-        }}
         .footer {{
             margin-top: 40px;
             font-size: 13px;
@@ -380,10 +346,6 @@ namespace AppBlocker.UI.Services
         <div class=""title"">Сайт заблокирован</div>
         <div class=""domain"">Вы попытались открыть <strong>{WebUtility.HtmlEncode(host)}</strong></div>
         {timerBlock}
-        <div class=""dopamine-card"">
-            <div class=""dopamine-label"">💡 Вместо этого попробуй</div>
-            <div class=""dopamine-text"">{WebUtility.HtmlEncode(habit)}</div>
-        </div>
         <div class=""footer"">AppBlocker — Фокус и Продуктивность</div>
     </div>
 </body>

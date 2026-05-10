@@ -96,35 +96,6 @@ body::before {
     letter-spacing: 4px;
 }
 
-.dopamine-card {
-    background: linear-gradient(135deg, #1C1C22 0%, #27272A 100%);
-    border: 1px solid #3F3F46;
-    border-radius: 16px;
-    padding: 32px;
-    animation: cardAppear 0.8s ease-out 0.3s both;
-}
-
-@keyframes cardAppear {
-    from { opacity: 0; transform: translateY(15px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.dopamine-label {
-    font-size: 12px;
-    color: #34D399;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    margin-bottom: 14px;
-    font-weight: 600;
-}
-
-.dopamine-text {
-    font-size: 22px;
-    font-weight: 600;
-    color: #E4E4E7;
-    line-height: 1.4;
-}
-
 .footer {
     margin-top: 48px;
     font-size: 13px;

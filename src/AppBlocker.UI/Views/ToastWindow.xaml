@@ -17,7 +17,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Заголовок: процесс заблокирован -->
@@ -33,17 +32,6 @@
                        Text="steam.exe" FontSize="13" Foreground="#A1A1AA" 
                        Margin="0,0,0,14"/>
 
-            <!-- Разделитель -->
-            <Border Grid.Row="2" Background="#3F3F46" Height="1" Margin="0,0,0,14"/>
-
-            <!-- Дофаминовая привычка -->
-            <StackPanel Grid.Row="3">
-                <TextBlock Text="💡 ВМЕСТО ЭТОГО ПОПРОБУЙ" FontSize="11" Foreground="#34D399" 
-                           FontWeight="SemiBold" Margin="0,0,0,6"/>
-                <TextBlock x:Name="HabitText" Text="Сделай 10 глубоких вдохов" 
-                           FontSize="15" FontWeight="SemiBold" Foreground="#E4E4E7" 
-                           TextWrapping="Wrap"/>
-            </StackPanel>
         </Grid>
     </Border>
 </Window>

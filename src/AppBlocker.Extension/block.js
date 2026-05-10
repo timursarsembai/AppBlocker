@@ -16,15 +16,8 @@
 
     // Загружаем данные из chrome.storage.local
     chrome.storage.local.get(
-        ["dopamineHabits", "sessionEnd", "sessionMode"],
+        ["sessionEnd", "sessionMode"],
         (data) => {
-            // Показываем случайную привычку
-            const habits = data.dopamineHabits || [];
-            if (habits.length > 0) {
-                const randomHabit = habits[Math.floor(Math.random() * habits.length)];
-                document.getElementById("habitText").textContent = randomHabit;
-            }
-
             // Запускаем таймер
             if (data.sessionEnd) {
                 const endTime = new Date(data.sessionEnd).getTime();

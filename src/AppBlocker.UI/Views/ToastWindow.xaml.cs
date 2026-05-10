@@ -9,14 +9,13 @@ namespace AppBlocker.UI.Views
     {
         private readonly DispatcherTimer _autoCloseTimer;
 
-        public ToastWindow(string processName, string habit)
+        public ToastWindow(string processName)
         {
             InitializeComponent();
 
-            ProcessNameText.Text = $"{processName} был заблокирован AppBlocker";
-            HabitText.Text = habit;
+            ProcessNameText.Text = processName;
 
-            // Позиция: правый нижний угол экрана
+            // Запускаем таймер для автозакрытияй нижний угол экрана
             var workArea = SystemParameters.WorkArea;
             Left = workArea.Right - Width - 10;
             Top = workArea.Bottom - 200;

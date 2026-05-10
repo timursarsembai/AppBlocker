@@ -29,10 +29,6 @@ namespace AppBlocker.Core.Models
         /// </summary>
         public DateTime? BlockEndTime { get; set; }
 
-        /// <summary>
-        /// Список пользовательских привычек для Дофаминового меню.
-        /// </summary>
-        public List<string> DopamineHabits { get; set; } = new List<string>();
 
         /// <summary>
         /// Запускать UI вместе с Windows.

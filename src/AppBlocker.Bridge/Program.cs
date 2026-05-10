@@ -80,7 +80,6 @@ class Program
                     var response = new
                     {
                         blocked = isActive ? config.BlockedWebsites : new System.Collections.Generic.List<string>(),
-                        habits = config.DopamineHabits,
                         sessionEnd = sessionEnd,
                         mode = isActive ? config.CurrentMode.ToString() : "None"
                     };

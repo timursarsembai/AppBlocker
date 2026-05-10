@@ -1,7 +1,7 @@
 ; Основная конфигурация установщика
 [Setup]
 AppName=AppBlocker
-AppVersion=1.1.0
+AppVersion=1.2.0
 AppPublisher=Ваша Компания
 AppPublisherURL=https://yourwebsite.com
 DefaultDirName={autopf}\AppBlocker

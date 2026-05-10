@@ -64,10 +64,7 @@
             <TextBlock Text="Этот сайт или приложение заблокировано на время сессии." FontSize="24" Foreground="#D4D4D8" HorizontalAlignment="Center" Margin="0,0,0,60"/>
 
             <Border Background="#27272A" CornerRadius="16" Padding="40" Margin="0,0,0,50">
-                <StackPanel>
-                    <TextBlock Text="Вместо этого сделайте небольшую паузу:" FontSize="18" Foreground="#A1A1AA" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                    <TextBlock x:Name="DopamineHabitTextBlock" Text="Выпейте стакан воды" FontSize="36" FontWeight="SemiBold" Foreground="#34D399" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="600"/>
-                </StackPanel>
+                    <!-- Удалено дофаминовое меню -->
             </Border>
 
             <Button Content="ПОНЯТНО" FontSize="24" FontWeight="Bold" Foreground="Black" Background="#10B981" 
