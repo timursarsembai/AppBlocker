@@ -11,8 +11,7 @@
         FontFamily="Segoe UI"
         MouseMove="Window_InputActivity"
         KeyDown="Window_InputActivity"
-        Activated="Window_Activated"
-        Icon="app.ico">
+        Activated="Window_Activated">
 
     <!-- Привязка главного ViewModel к окну -->
     <Window.DataContext>
