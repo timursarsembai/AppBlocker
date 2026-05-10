@@ -320,13 +320,61 @@ namespace AppBlocker.UI.ViewModels
         public double RowOpacity => IsRunning ? 1.0 : 0.5;
     }
 
+    public class BlockRuleViewModel : ViewModelBase
+    {
+        private string _name;
+        private BlockType _type;
+        private TimeSpan? _startTime;
+        private TimeSpan? _endTime;
+        private bool _isProcess;
+
+        public string Name
+        {
+            get => _name;
+            set { _name = value; OnPropertyChanged(); }
+        }
+
+        public BlockType Type
+        {
+            get => _type;
+            set { _type = value; OnPropertyChanged(); OnPropertyChanged(nameof(TypeText)); }
+        }
+
+        public TimeSpan? StartTime
+        {
+            get => _startTime;
+            set { _startTime = value; OnPropertyChanged(); }
+        }
+
+        public TimeSpan? EndTime
+        {
+            get => _endTime;
+            set { _endTime = value; OnPropertyChanged(); }
+        }
+
+        public string TypeText => Type switch
+        {
+            BlockType.Always => "Всегда",
+            BlockType.Timer => "По таймеру",
+            BlockType.Schedule => "По расписанию",
+            _ => "Неизвестно"
+        };
+
+        public bool IsProcess
+        {
+            get => _isProcess;
+            set { _isProcess = value; OnPropertyChanged(); }
+        }
+    }
+
     public class BlacklistsViewModel : ViewModelBase
     {
         private readonly ConfigManager _configManager;
         private AppConfig _currentConfig;
 
-        public ObservableCollection<BlockedSite> BlockedWebsites { get; set; }
-        public ObservableCollection<ProcessEntry> BlockedProcesses { get; set; }
+        public ObservableCollection<BlockRuleViewModel> AlwaysBlocked { get; set; }
+        public ObservableCollection<BlockRuleViewModel> TimerBlocked { get; set; }
+        public ObservableCollection<BlockRuleViewModel> ScheduleBlocked { get; set; }
         public ObservableCollection<ProcessEntry> FilteredProcesses { get; set; }
 
         private List<ProcessEntry> _allProcesses = new List<ProcessEntry>();
@@ -338,6 +386,27 @@ namespace AppBlocker.UI.ViewModels
             set { _newWebsiteText = value; OnPropertyChanged(); }
         }
 
+        private BlockType _newWebsiteType = BlockType.Timer;
+        public BlockType NewWebsiteType
+        {
+            get => _newWebsiteType;
+            set { _newWebsiteType = value; OnPropertyChanged(); }
+        }
+
+        private string _newWebsiteStartTime = "09:00";
+        public string NewWebsiteStartTime
+        {
+            get => _newWebsiteStartTime;
+            set { _newWebsiteStartTime = value; OnPropertyChanged(); }
+        }
+
+        private string _newWebsiteEndTime = "18:00";
+        public string NewWebsiteEndTime
+        {
+            get => _newWebsiteEndTime;
+            set { _newWebsiteEndTime = value; OnPropertyChanged(); }
+        }
+
         private string _searchText = "";
         public string SearchText
         {
@@ -345,31 +414,24 @@ namespace AppBlocker.UI.ViewModels
             set { _searchText = value; OnPropertyChanged(); ApplyFilter(); }
         }
 
-        private int _selectedTab;
-        public int SelectedTab
-        {
-            get => _selectedTab;
-            set { _selectedTab = value; OnPropertyChanged(); }
-        }
-
         public ICommand AddWebsiteCommand { get; }
         public ICommand RemoveWebsiteCommand { get; }
         public ICommand ToggleBlockProcessCommand { get; }
         public ICommand UnblockProcessCommand { get; }
         public ICommand RefreshProcessesCommand { get; }
+        public ICommand ChangeTypeCommand { get; }
 
         public BlacklistsViewModel()
         {
             _configManager = new ConfigManager();
             _currentConfig = _configManager.LoadConfig();
 
-            BlockedWebsites = new ObservableCollection<BlockedSite>(
-                (_currentConfig.BlockedWebsites ?? new List<string>())
-                    .Select(url => new BlockedSite { Url = url })
-            );
-
-            BlockedProcesses = new ObservableCollection<ProcessEntry>();
+            AlwaysBlocked = new ObservableCollection<BlockRuleViewModel>();
+            TimerBlocked = new ObservableCollection<BlockRuleViewModel>();
+            ScheduleBlocked = new ObservableCollection<BlockRuleViewModel>();
             FilteredProcesses = new ObservableCollection<ProcessEntry>();
+
+            LoadBlockedResources();
             LoadRunningProcesses();
 
             AddWebsiteCommand = new RelayCommand(_ =>
@@ -378,10 +440,29 @@ namespace AppBlocker.UI.ViewModels
                 {
                     var site = NewWebsiteText.Trim().ToLower()
                         .Replace("https://", "").Replace("http://", "").TrimEnd('/');
-                    if (!BlockedWebsites.Any(b => b.Url == site))
+                    
+                    var allRules = AlwaysBlocked.Concat(TimerBlocked).Concat(ScheduleBlocked);
+                    if (!allRules.Any(b => b.Name == site && !b.IsProcess))
                     {
-                        BlockedWebsites.Add(new BlockedSite { Url = site });
-                        SaveWebsites();
+                        var vm = new BlockRuleViewModel
+                        {
+                            Name = site,
+                            Type = NewWebsiteType,
+                            IsProcess = false
+                        };
+
+                        if (NewWebsiteType == BlockType.Schedule)
+                        {
+                            if (TimeSpan.TryParse(NewWebsiteStartTime, out var start) &&
+                                TimeSpan.TryParse(NewWebsiteEndTime, out var end))
+                            {
+                                vm.StartTime = start;
+                                vm.EndTime = end;
+                            }
+                        }
+
+                        AddResourceToCorrectList(vm);
+                        SaveConfig();
                     }
                     NewWebsiteText = string.Empty;
                 }
@@ -389,20 +470,107 @@ namespace AppBlocker.UI.ViewModels
 
             RemoveWebsiteCommand = new RelayCommand(param =>
             {
-                if (param is BlockedSite site) { BlockedWebsites.Remove(site); SaveWebsites(); }
+                if (param is BlockRuleViewModel vm)
+                {
+                    RemoveResourceFromList(vm);
+                    SaveConfig();
+                    if (vm.IsProcess)
+                    {
+                        var proc = _allProcesses.FirstOrDefault(p => p.FileName.Equals(vm.Name, StringComparison.OrdinalIgnoreCase));
+                        if (proc != null) proc.IsBlocked = false;
+                        ApplyFilter();
+                    }
+                }
             });
 
             ToggleBlockProcessCommand = new RelayCommand(param =>
             {
-                if (param is ProcessEntry entry) { entry.IsBlocked = !entry.IsBlocked; SaveProcesses(); RebuildLists(); }
-            });
-
-            UnblockProcessCommand = new RelayCommand(param =>
-            {
-                if (param is ProcessEntry entry) { entry.IsBlocked = false; SaveProcesses(); RebuildLists(); }
+                if (param is ProcessEntry entry)
+                {
+                    entry.IsBlocked = !entry.IsBlocked;
+                    if (entry.IsBlocked)
+                    {
+                        var vm = new BlockRuleViewModel
+                        {
+                            Name = entry.FileName,
+                            Type = BlockType.Timer, // По умолчанию
+                            IsProcess = true
+                        };
+                        AddResourceToCorrectList(vm);
+                    }
+                    else
+                    {
+                        var allRules = AlwaysBlocked.Concat(TimerBlocked).Concat(ScheduleBlocked).ToList();
+                        var rule = allRules.FirstOrDefault(r => r.Name.Equals(entry.FileName, StringComparison.OrdinalIgnoreCase) && r.IsProcess);
+                        if (rule != null) RemoveResourceFromList(rule);
+                    }
+                    SaveConfig();
+                    ApplyFilter();
+                }
             });
 
             RefreshProcessesCommand = new RelayCommand(_ => LoadRunningProcesses());
+
+            ChangeTypeCommand = new RelayCommand(param =>
+            {
+                if (param is BlockRuleViewModel vm)
+                {
+                    // Перемещаем в другой список при смене типа
+                    RemoveResourceFromList(vm);
+                    AddResourceToCorrectList(vm);
+                    SaveConfig();
+                }
+            });
+        }
+
+        private void LoadBlockedResources()
+        {
+            AlwaysBlocked.Clear();
+            TimerBlocked.Clear();
+            ScheduleBlocked.Clear();
+
+            _currentConfig = _configManager.LoadConfig();
+
+            foreach (var rule in _currentConfig.WebsiteBlockRules ?? new List<BlockRule>())
+            {
+                AddResourceToCorrectList(new BlockRuleViewModel
+                {
+                    Name = rule.Name,
+                    Type = rule.Type,
+                    StartTime = rule.StartTime,
+                    EndTime = rule.EndTime,
+                    IsProcess = false
+                });
+            }
+
+            foreach (var rule in _currentConfig.ProcessBlockRules ?? new List<BlockRule>())
+            {
+                AddResourceToCorrectList(new BlockRuleViewModel
+                {
+                    Name = rule.Name,
+                    Type = rule.Type,
+                    StartTime = rule.StartTime,
+                    EndTime = rule.EndTime,
+                    IsProcess = true
+                });
+            }
+        }
+
+        private void AddResourceToCorrectList(BlockRuleViewModel vm)
+        {
+            switch (vm.Type)
+            {
+                case BlockType.Always: AlwaysBlocked.Add(vm); break;
+                case BlockType.Timer: TimerBlocked.Add(vm); break;
+                case BlockType.Schedule: ScheduleBlocked.Add(vm); break;
+            }
+        }
+
+        private void RemoveResourceFromList(BlockRuleViewModel vm)
+        {
+            AlwaysBlocked.Remove(vm);
+            TimerBlocked.Remove(vm);
+            ScheduleBlocked.Remove(vm);
         }
 
         private void LoadRunningProcesses()
@@ -423,9 +591,10 @@ namespace AppBlocker.UI.ViewModels
             };
 
             _currentConfig = _configManager.LoadConfig();
-            var blockedSet = new HashSet<string>(
-                _currentConfig.BlockedProcesses ?? new List<string>(),
-                StringComparer.OrdinalIgnoreCase);
+            var blockedSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
+            var allRules = _currentConfig.ProcessBlockRules ?? new List<BlockRule>();
+            foreach (var r in allRules) blockedSet.Add(r.Name);
 
             var runningNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -481,14 +650,6 @@ namespace AppBlocker.UI.ViewModels
                 }
             }
 
-            RebuildLists();
-        }
-
-        private void RebuildLists()
-        {
-            BlockedProcesses.Clear();
-            foreach (var p in _allProcesses.Where(p => p.IsBlocked))
-                BlockedProcesses.Add(p);
             ApplyFilter();
         }
 
@@ -509,16 +670,28 @@ namespace AppBlocker.UI.ViewModels
                 FilteredProcesses.Add(p);
         }
 
-        private void SaveWebsites()
+        private void SaveConfig()
         {
-            _currentConfig.BlockedWebsites = BlockedWebsites.Select(b => b.Url).ToList();
+            _currentConfig.WebsiteBlockRules = MergeRules(false);
+            _currentConfig.ProcessBlockRules = MergeRules(true);
             _configManager.SaveConfig(_currentConfig);
         }
 
-        private void SaveProcesses()
+        private List<BlockRule> MergeRules(bool isProcess)
         {
-            _currentConfig.BlockedProcesses = _allProcesses.Where(p => p.IsBlocked).Select(p => p.FileName).ToList();
-            _configManager.SaveConfig(_currentConfig);
+            var list = new List<BlockRule>();
+            var all = AlwaysBlocked.Concat(TimerBlocked).Concat(ScheduleBlocked).Where(x => x.IsProcess == isProcess);
+            foreach (var vm in all)
+            {
+                list.Add(new BlockRule
+                {
+                    Name = vm.Name,
+                    Type = vm.Type,
+                    StartTime = vm.StartTime,
+                    EndTime = vm.EndTime
+                });
+            }
+            return list;
         }
     }
 

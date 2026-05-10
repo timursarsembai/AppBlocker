@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using AppBlocker.Core.Configuration;
+using AppBlocker.Core.Models;
 
 namespace AppBlocker.Bridge;
 
@@ -60,28 +61,24 @@ class Program
                 {
                     var config = configManager.LoadConfig();
 
-                    // Определяем активна ли сессия
-                    bool isActive = config.CurrentMode.ToString() != "None" && config.BlockEndTime.HasValue;
-                    string sessionEnd = null;
-                    
-                    if (isActive && config.BlockEndTime.HasValue)
+                    var activeWebsites = new System.Collections.Generic.List<string>();
+                    foreach (var rule in config.WebsiteBlockRules ?? new System.Collections.Generic.List<BlockRule>())
                     {
-                        // Проверяем не истекла ли
-                        if (DateTime.UtcNow >= config.BlockEndTime.Value.ToUniversalTime())
+                        if (IsRuleActive(rule, config))
                         {
-                            isActive = false;
-                        }
-                        else
-                        {
-                            sessionEnd = config.BlockEndTime.Value.ToUniversalTime().ToString("o");
+                            activeWebsites.Add(rule.Name);
                         }
                     }
 
+                    // Для совместимости с расширением
+                    bool isTimerActive = config.CurrentMode.ToString() != "None" && config.BlockEndTime.HasValue && DateTime.UtcNow < config.BlockEndTime.Value.ToUniversalTime();
+                    string sessionEnd = isTimerActive ? config.BlockEndTime.Value.ToUniversalTime().ToString("o") : null;
+
                     var response = new
                     {
-                        blocked = isActive ? config.BlockedWebsites : new System.Collections.Generic.List<string>(),
+                        blocked = activeWebsites,
                         sessionEnd = sessionEnd,
-                        mode = isActive ? config.CurrentMode.ToString() : "None"
+                        mode = config.CurrentMode.ToString()
                     };
 
                     responseJson = JsonSerializer.Serialize(response);
@@ -108,6 +105,33 @@ class Program
                 // Если stdin закрыт или любая ошибка — выходим
                 break;
             }
+        }
+    }
+
+    private static bool IsRuleActive(BlockRule rule, AppConfig config)
+    {
+        switch (rule.Type)
+        {
+            case BlockType.Always:
+                return true;
+            case BlockType.Timer:
+                return config.CurrentMode.ToString() != "None" && config.BlockEndTime.HasValue && DateTime.UtcNow < config.BlockEndTime.Value.ToUniversalTime();
+            case BlockType.Schedule:
+                if (rule.StartTime.HasValue && rule.EndTime.HasValue)
+                {
+                    var now = DateTime.Now.TimeOfDay;
+                    if (rule.StartTime.Value <= rule.EndTime.Value)
+                    {
+                        return now >= rule.StartTime.Value && now <= rule.EndTime.Value;
+                    }
+                    else
+                    {
+                        return now >= rule.StartTime.Value || now <= rule.EndTime.Value;
+                    }
+                }
+                return false;
+            default:
+                return false;
         }
     }
 }

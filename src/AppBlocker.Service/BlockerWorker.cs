@@ -36,46 +36,57 @@ namespace AppBlocker.Service
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // 1. При старте сервиса читаем конфиг (вдруг сервис упал и перезапустился во время сессии)
+            // 1. При старте сервиса читаем конфиг
             _currentConfig = _configManager.LoadConfig();
             ApplyConfig(_currentConfig);
 
-            // 2. Запускаем сервер прослушивания команд от UI в отдельном фоновом потоке
+            // 2. Запускаем сервер прослушивания команд от UI
             _ = Task.Run(() => _ipcServer.StartListeningAsync(stoppingToken), stoppingToken);
 
-            // 3. Основной цикл: проверяем, не закончилось ли время текущей блокировки
+            // 3. Основной цикл: проверяем расписание и таймер
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
+                // Перечитываем конфиг, чтобы подхватить изменения из UI и проверить расписание
+                _currentConfig = _configManager.LoadConfig();
+                ApplyConfig(_currentConfig);
+
                 if (_currentConfig.CurrentMode != BlockingMode.None && 
                     _currentConfig.BlockEndTime.HasValue && 
                     DateTime.UtcNow >= _currentConfig.BlockEndTime.Value)
                 {
-                    // Время истекло, снимаем блокировки
                     StopSession();
                 }
             }
         }
 
         /// <summary>
-        /// Применяет конфигурацию: запускает или останавливает движки.
+        /// Применяет конфигурацию: запускает или останавливает движки на основе АКТИВНЫХ правил.
         /// </summary>
         private void ApplyConfig(AppConfig config)
         {
-            if (config.CurrentMode != BlockingMode.None)
+            var activeWebsites = GetActiveBlockedWebsites(config);
+            var activeProcesses = GetActiveBlockedProcesses(config);
+
+            // Процессы
+            _processBlocker.UpdateBlacklist(activeProcesses);
+            if (activeProcesses.Count > 0)
             {
-                // Включаем мониторинг процессов
-                _processBlocker.UpdateBlacklist(config.BlockedProcesses);
                 _processBlocker.StartMonitoring();
-                
-                // Включаем блокировку сайтов
-                _hostsBlocker.BlockDomains(config.BlockedWebsites);
             }
             else
             {
-                // Выключаем всё
                 _processBlocker.StopMonitoringAsync().Wait();
+            }
+
+            // Сайты (Hosts)
+            if (activeWebsites.Count > 0)
+            {
+                _hostsBlocker.BlockDomains(activeWebsites);
+            }
+            else
+            {
                 _hostsBlocker.ClearAllBlocks();
             }
         }
@@ -149,6 +160,53 @@ namespace AppBlocker.Service
             catch (Exception ex)
             {
                 return new IpcResponse { IsSuccess = false, ErrorMessage = $"Ошибка сервера: {ex.Message}" };
+            }
+        }
+
+        private List<string> GetActiveBlockedWebsites(AppConfig config)
+        {
+            var list = new List<string>();
+            foreach (var rule in config.WebsiteBlockRules ?? new List<BlockRule>())
+            {
+                if (IsRuleActive(rule, config)) list.Add(rule.Name);
+            }
+            return list;
+        }
+
+        private List<string> GetActiveBlockedProcesses(AppConfig config)
+        {
+            var list = new List<string>();
+            foreach (var rule in config.ProcessBlockRules ?? new List<BlockRule>())
+            {
+                if (IsRuleActive(rule, config)) list.Add(rule.Name);
+            }
+            return list;
+        }
+
+        private bool IsRuleActive(BlockRule rule, AppConfig config)
+        {
+            switch (rule.Type)
+            {
+                case BlockType.Always:
+                    return true;
+                case BlockType.Timer:
+                    return config.CurrentMode != BlockingMode.None;
+                case BlockType.Schedule:
+                    if (rule.StartTime.HasValue && rule.EndTime.HasValue)
+                    {
+                        var now = DateTime.Now.TimeOfDay;
+                        if (rule.StartTime.Value <= rule.EndTime.Value)
+                        {
+                            return now >= rule.StartTime.Value && now <= rule.EndTime.Value;
+                        }
+                        else
+                        {
+                            return now >= rule.StartTime.Value || now <= rule.EndTime.Value;
+                        }
+                    }
+                    return false;
+                default:
+                    return false;
             }
         }
 

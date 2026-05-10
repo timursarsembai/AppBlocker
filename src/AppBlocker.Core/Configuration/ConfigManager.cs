@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using AppBlocker.Core.Models;
 
@@ -58,6 +59,30 @@ namespace AppBlocker.Core.Configuration
                     if (config == null)
                     {
                         return CreateDefaultConfig();
+                    }
+
+                    // Миграция старых списков в новые правила
+                    bool migrated = false;
+                    if (config.BlockedWebsites != null && config.BlockedWebsites.Count > 0 && 
+                        (config.WebsiteBlockRules == null || config.WebsiteBlockRules.Count == 0))
+                    {
+                        config.WebsiteBlockRules = config.BlockedWebsites.Select(w => new BlockRule { Name = w, Type = BlockType.Timer }).ToList();
+                        config.BlockedWebsites.Clear();
+                        migrated = true;
+                    }
+                    if (config.BlockedProcesses != null && config.BlockedProcesses.Count > 0 && 
+                        (config.ProcessBlockRules == null || config.ProcessBlockRules.Count == 0))
+                    {
+                        config.ProcessBlockRules = config.BlockedProcesses.Select(p => new BlockRule { Name = p, Type = BlockType.Timer }).ToList();
+                        config.BlockedProcesses.Clear();
+                        migrated = true;
+                    }
+                    if (migrated)
+                    {
+                        // Сохраняем обновленный конфиг с новыми правилами
+                        var options = new JsonSerializerOptions { WriteIndented = true };
+                        string updatedJson = JsonSerializer.Serialize(config, options);
+                        File.WriteAllText(ConfigFilePath, updatedJson);
                     }
 
                     return config;

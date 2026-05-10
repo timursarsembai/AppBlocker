@@ -29,6 +29,16 @@ namespace AppBlocker.Core.Models
         /// </summary>
         public DateTime? BlockEndTime { get; set; }
 
+        /// <summary>
+        /// Расширенные правила блокировки сайтов.
+        /// </summary>
+        public List<BlockRule> WebsiteBlockRules { get; set; } = new List<BlockRule>();
+
+        /// <summary>
+        /// Расширенные правила блокировки процессов.
+        /// </summary>
+        public List<BlockRule> ProcessBlockRules { get; set; } = new List<BlockRule>();
+
 
         /// <summary>
         /// Запускать UI вместе с Windows.
