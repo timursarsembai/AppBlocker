@@ -4,7 +4,9 @@
 
 AppBlocker использует фоновую службу с правами SYSTEM, расширение для браузера, и систему межпроцессного взаимодействия (Native Messaging), что делает обход блокировок крайне сложным.
 
-![AppBlocker UI](https://github.com/timursarsembai/AppBlocker/raw/main/src/AppBlocker.Extension/icons/icon128.png)
+<p align="center">
+  <img src="https://github.com/timursarsembai/AppBlocker/raw/main/src/AppBlocker.Extension/icons/icon128.png" width="128" alt="AppBlocker UI" />
+</p>
 
 ## Ключевые возможности
 
